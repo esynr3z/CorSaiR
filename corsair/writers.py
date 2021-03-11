@@ -219,7 +219,12 @@ class DocsWriter(_Jinja2Writer):
     """
     def __call__(self, path, rmap):
         """Create documentation for a register map in Markdown."""
-        j2_template = 'regmap_md.j2'
+        if rmap.config['docs']['type'].value == 'md':
+            j2_template = 'regmap_md.j2'
+        elif rmap.config['docs']['type'].value == 'asciidoc':
+            j2_template = 'regmap_asciidoc.j2'
+        elif rmap.config['docs']['type'].value == 'asciidoc_rus':
+            j2_template = 'regmap_asciidoc_rus.j2'
 
         print("Write '%s' file with DocsWriter:" % path)
         print("  Prepare data ... ", end='')

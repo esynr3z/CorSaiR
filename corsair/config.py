@@ -258,6 +258,10 @@ class Configuration(ParameterGroup):
 
         # group docs
         self.add_params(ParameterGroup('docs'))
+        docs_type_allowed = ['md', 'asciidoc', 'asciidoc_rus']
+        self['docs'].add_params(
+            Parameter(name='type', value='md', validator=lambda val: val in docs_type_allowed)
+        )
 
         # common params
         data_width_allowed = {

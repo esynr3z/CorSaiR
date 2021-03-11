@@ -1,0 +1,84 @@
+{# MACRO #}
+{#- bit field range #}
+{% macro range(bf) %}
+    {% if bf.width == 1 %}
+{{ bf.msb }}
+    {%- else %}
+{{ bf.msb }}:{{ bf.lsb }}
+    {%- endif %}
+{%- endmacro %}
+
+{#- bit field mode #}
+{% macro mode(bf) %}
+{{ bf.access }}{{ ', ' + ', '.join(bf.modifiers) if bf.modifiers else '' }}
+{%- endmacro %}
+
+{#- value in hex format #}
+{% macro literal(initial, width) %}
+{{ "0x%0{w}x".format(w=width // 4) % initial }}
+{%- endmacro %}
+
+{#- TEMPLATE NAMESPACE #}
+{% set tmp = namespace() %}
+
+{#- TEMPLATE #}
+== {{ config['name'].value }}
+
+Created with https://github.com/esynr3z/corsair[Corsair] v{{ corsair_ver }}.
+
+Register map v{{ config['version'].value }}.
+
+
+=== Conventions
+
+[#table-Common_register_access,cols="1,1,1", options="header"]
+|==========================
+| Name | Type | Description
+| rw    | access   | Read or Write
+| ro    | access   | Read Only. Write has no effect.
+| wo    | access   | Write Only. Zeros are read.
+| sc    | modifier | Self Clear. Write 0 - no effect, write 1 - next tick self clear.
+| w1tc  | modifier | Write 1 To Clear. Write 0 - no effect, write 1 - current value will be cleared (all zeros).
+| w1ts  | modifier | Write 1 To Set. Write 0 - no effect, write 1 - current value will be set (all ones).
+| w1tt  | modifier | Write 1 To Toggle. Write 0 - no effect, write 1 - current value will be inversed.
+| rtc   | modifier | Read To Clear. Current value will be cleared next tick after read.
+| const | modifier | Constant. Reset value is hardcoded as only value can be read.
+| hwu   | modifier | Hardware Update. Register value can be updated from outside the map with hardware.
+|==========================
+
+
+[[{{ config['name'].value }}_register_map]]
+=== Register map
+
+[#table-Register_map,cols="1,1,1", options="header"]
+|==========================
+| Name | Address | Description
+{% for reg in rmap %}
+{{ "| <<%-24s>> | %-10s | %s " % ("%s" % (reg.name), literal(reg.address, config['address_width'].value), reg.description) }}
+{% endfor %}
+|==========================
+
+
+{% for reg in rmap %}
+
+[[{{ reg.name }}]]
+=== {{ reg.name }}
+
+{{ reg.description }}
+
+Address offset: {{ literal(reg.address, config['address_width'].value) }}
+
+Reset value: {{ literal(reg.initial, config['data_width'].value) }}
+
+image::{{ config['name'].value }}_img/{{ reg.name.lower()}}.svg[{{ reg.name.lower()}}]
+
+[#table-{{ reg.name }},cols="1,1,1,1,1", options="header"]
+|==========================
+| Name | Bits | Mode | Reset | Description
+{% for bf in reg.bfields[::-1] %}
+{{ "| %-16s | %-6s | %-15s | %-10s | %s" % (bf.name, range(bf), mode(bf), literal(bf.initial, bf.width), bf.description) }}
+{% endfor %}
+|==========================
+
+Back to  <<{{ config['name'].value }}_register_map>>
+{% endfor %}

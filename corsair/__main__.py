@@ -171,7 +171,12 @@ def main():
 
     # create docs
     if args.docs:
-        doc_name = '%s.md' % outname
+        if config['docs']['type'].value == 'md':
+            doc_name = '%s.md' % outname
+        elif config['docs']['type'].value == 'asciidoc':
+            doc_name = '%s.asciidoc' % outname
+        elif config['docs']['type'].value == 'asciidoc_rus':
+            doc_name = '%s_rus.asciidoc' % outname
         doc_path = str(outdir / doc_name)
         corsair.DocsWriter()(doc_path, rmap)
 
